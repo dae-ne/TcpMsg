@@ -7,7 +7,7 @@ namespace Client
 {
     class EntryPoint
     {
-        static void Main(string[] args)
+        static void Main()
         {
             StartClient();
         }
