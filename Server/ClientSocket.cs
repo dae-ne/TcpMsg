@@ -6,10 +6,12 @@ namespace Server
 {
     class ClientSocket
     {
+        private readonly ConnectionsManager _connectionsManager;
         private readonly TcpClient _socket;
 
-        public ClientSocket(TcpClient socket)
+        public ClientSocket(ConnectionsManager connectionsManager, TcpClient socket)
         {
+            _connectionsManager = connectionsManager;
             _socket = socket;
         }
 
@@ -24,7 +26,7 @@ namespace Server
             }
             catch
             {
-                throw;
+                _connectionsManager.AddToUnregisterQueue(this);
             }
         }
 
@@ -37,7 +39,7 @@ namespace Server
             }
             catch
             {
-                throw;
+                _connectionsManager.AddToUnregisterQueue(this);
             }
         }
     }
