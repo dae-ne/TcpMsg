@@ -7,10 +7,11 @@ namespace Server
     {
         static void Main()
         {
-            var listener = new Thread(new ThreadStart(Server.Start)) { IsBackground = true };
-            listener.Start();
-            Console.WriteLine("Press <enter> to quit");
-            Console.ReadLine();
+            //var listener = new Thread(new ThreadStart(Server.Start)) { IsBackground = true };
+            //listener.Start();
+            var server = new Server();
+            server.Main();
+            
         }
     }
 }
