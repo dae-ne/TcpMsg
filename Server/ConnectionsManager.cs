@@ -1,12 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Server
 {
     class ConnectionsManager
     {
-        private List<ClientSocket> _sockets = new List<ClientSocket>();
-
-        private Queue<ClientSocket> _unregisterQueue = new Queue<ClientSocket>();
+        private readonly List<ClientSocket> _sockets = new List<ClientSocket>();
+        private readonly Queue<ClientSocket> _unregisterQueue = new Queue<ClientSocket>();
 
         public void Register(ClientSocket socket) => _sockets.Add(socket);
 
@@ -23,24 +25,39 @@ namespace Server
             }
         }
 
-        public void ListenToAll()
+        public async Task ListenToAllAsync()
         {
-            foreach (var socket in _sockets)
+            if (_sockets.Count < 1)
             {
-                //_sockets.Listen
+                await Task.Delay(200);
             }
+            else
+            {
+                if (_sockets.Count > 1)
+                {
+                    Console.WriteLine("asdf");
+                }
 
-            UnregisterQueued();
+                foreach (var socket in _sockets)
+                {
+                    var bytes = await socket.ListenAsync();
+
+                    if (bytes.Length > 0)
+                    {
+                        await NotifyAll(bytes, bytes.Length);
+                    }
+                }
+
+                UnregisterQueued();
+            }
         }
 
-        public void NotifyAll()
+        public async Task NotifyAll(byte[] data, int length)
         {
             foreach (var socket in _sockets)
             {
-
+                await socket.SendAsync(data, length);
             }
-
-            UnregisterQueued();
         }
     }
 }

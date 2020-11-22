@@ -7,11 +7,8 @@ namespace Server
     {
         static void Main()
         {
-            //var listener = new Thread(new ThreadStart(Server.Start)) { IsBackground = true };
-            //listener.Start();
             var server = new Server();
-            server.Main();
-            
+            server.Run("127.0.0.1", 11000);
         }
     }
 }

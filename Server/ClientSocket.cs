@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Server
 {
-    class ClientSocket
+    class ClientSocket : ICloneable
     {
         private readonly ConnectionsManager _connectionsManager;
         private readonly TcpClient _socket;
@@ -15,30 +17,43 @@ namespace Server
             _socket = socket;
         }
 
-        public void Listen()
+        public object Clone()
         {
-            try
-            {
-                var bytes = new byte[1024];
-                using var stream = _socket.GetStream();
-                var length = stream.Read(bytes);
-                Console.WriteLine(Encoding.UTF8.GetString(bytes, 0, length));
-            }
-            catch
-            {
-                _connectionsManager.AddToUnregisterQueue(this);
-            }
+            throw new NotImplementedException();
         }
 
-        public void Send(byte[] data, int length)
+        public async Task<byte[]> ListenAsync()
+        {
+            var bytes = new byte[1024];
+            var length = 0;
+
+            try
+            {
+                var stream = _socket.GetStream();
+                length = await stream.ReadAsync(bytes)
+                                         .ConfigureAwait(false);
+                Console.WriteLine(Encoding.UTF8.GetString(bytes, 0, length));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+                _connectionsManager.AddToUnregisterQueue(this);
+            }
+
+            return bytes.Where((_, i) => i < length).ToArray();
+        }
+
+        public async Task SendAsync(byte[] data, int length)
         {
             try
             {
-                using var stream = _socket.GetStream();
-                stream.Write(data, 0, length);
+                var stream = _socket.GetStream();
+                await stream.WriteAsync(data, 0, length)
+                            .ConfigureAwait(false);
             }
-            catch
+            catch (Exception e)
             {
+                Console.WriteLine(e.ToString());
                 _connectionsManager.AddToUnregisterQueue(this);
             }
         }

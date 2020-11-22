@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Client
 {
@@ -19,8 +20,8 @@ namespace Client
                 using var client = new TcpClient("127.0.0.1", 11000);
                 using var stream = client.GetStream();
                 var data = Encoding.UTF8.GetBytes(message);
-                stream.Write(data, 0, data.Length);
-                Console.WriteLine($"sent: {message}");
+                //stream.Write(data, 0, data.Length);
+                //Console.WriteLine($"sent: {message}");
                 //data = new byte[1024];
                 //var bytes = stream.read(data, 0, data.length);
                 //var responsedata = encoding.ascii.getstring(data, 0, bytes);
@@ -28,6 +29,8 @@ namespace Client
 
                 for (; ; )
                 {
+                    stream.Write(data, 0, data.Length);
+                    Console.WriteLine($"sent: {message}");
                     data = new byte[1024];
                     var bytes = stream.Read(data, 0, data.Length);
 
@@ -35,6 +38,8 @@ namespace Client
 
                     var responsedata = Encoding.UTF8.GetString(data, 0, bytes);
                     Console.WriteLine($"received: {responsedata}, {bytes}");
+
+                    Task.Delay(3000);
                 }
 
                 // close everything.
