@@ -1,12 +1,10 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Server
 {
-    class ClientSocket : ICloneable
+    class ClientSocket
     {
         private readonly ConnectionsManager _connectionsManager;
         private readonly TcpClient _socket;
@@ -15,11 +13,7 @@ namespace Server
         {
             _connectionsManager = connectionsManager;
             _socket = socket;
-        }
-
-        public object Clone()
-        {
-            throw new NotImplementedException();
+            _connectionsManager.Register(this);
         }
 
         public async Task<byte[]> ListenAsync()
@@ -32,11 +26,10 @@ namespace Server
                 var stream = _socket.GetStream();
                 length = await stream.ReadAsync(bytes)
                                          .ConfigureAwait(false);
-                Console.WriteLine(Encoding.UTF8.GetString(bytes, 0, length));
             }
-            catch (Exception e)
+            catch
             {
-                Console.WriteLine(e.ToString());
+                throw;
             }
 
             return bytes.Where((_, i) => i < length).ToArray();
@@ -50,10 +43,16 @@ namespace Server
                 await stream.WriteAsync(data, 0, length)
                             .ConfigureAwait(false);
             }
-            catch (Exception e)
+            catch
             {
-                Console.WriteLine(e.ToString());
+                throw;
             }
+        }
+
+        public void CloseConnection()
+        {
+            _socket.Close();
+            _connectionsManager.Unregister(this);
         }
     }
 }

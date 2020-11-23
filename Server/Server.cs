@@ -8,13 +8,13 @@ namespace Server
 {
     class Server
     {
-        private ConnectionsManager _connections = new ConnectionsManager();
+        private readonly ConnectionsManager _connectionsManager = new ConnectionsManager();
 
         public void Run(string ip, int port)
         {
             var cts = new CancellationTokenSource();
             var ipAddress = IPAddress.Parse(ip);
-            TcpListener listener = new TcpListener(ipAddress, port);
+            var listener = new TcpListener(ipAddress, port);
 
             try
             {
@@ -34,47 +34,40 @@ namespace Server
 
         private async Task AcceptClientsAsync(TcpListener listener, CancellationToken ct)
         {
-            var clientCounter = 0;
+            var clientCounter = 0u;
 
             while (!ct.IsCancellationRequested)
             {
                 var client = await listener.AcceptTcpClientAsync()
                                                  .ConfigureAwait(false);
                 clientCounter++;
-                _ = ManageConnection(client, ct, clientCounter);
+                _ = HandleConnection(client, ct, clientCounter);
             }
         }
 
-        private async Task ManageConnection(TcpClient client, CancellationToken ct, int clientIndex)
+        private async Task HandleConnection(TcpClient client, CancellationToken ct, uint clientIndex)
         {
             Console.WriteLine($"New client (id: {clientIndex}) connected");
-            var newClientObject = new ClientSocket(_connections, client);
-            _connections.Register(newClientObject);
-            var stream = client.GetStream();
+            var newClientObject = new ClientSocket(_connectionsManager, client);
 
-            while (_connections.Contains(newClientObject)
+            while (_connectionsManager.Contains(newClientObject)
                 && !ct.IsCancellationRequested)
             {
-                try
-                {
-                    var buf = new byte[4096];
-                    var length = await stream.ReadAsync(buf, 0, buf.Length, ct);
-
-                    if (length > 0)
-                    {
-                        await stream.WriteAsync(buf, 0, length, ct)
-                                    .ConfigureAwait(false);
-                    }
-                }
-                catch
-                {
-                    _connections.Unregister(newClientObject);
-                }
-
+                await _connectionsManager.HandleConnection(newClientObject);
                 await Task.Delay(100);
             }
 
             Console.WriteLine($"Client (id: {clientIndex}) disconnected");
+            var numberOfClients = _connectionsManager.NumberOfClients;
+
+            if (numberOfClients == 1)
+            {
+                Console.WriteLine("1 client connected");
+            }
+            else
+            {
+                Console.WriteLine($"{numberOfClients} clients connected");
+            }
         }
     }
 }
