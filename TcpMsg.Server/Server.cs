@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Server
+namespace TcpMsg.Server
 {
     class Server
     {
@@ -53,7 +53,7 @@ namespace Server
             while (_connectionsManager.Contains(newClientObject)
                 && !ct.IsCancellationRequested)
             {
-                await _connectionsManager.HandleConnection(newClientObject);
+                await _connectionsManager.HandleConnectionAsync(newClientObject);
                 await Task.Delay(100);
             }
 

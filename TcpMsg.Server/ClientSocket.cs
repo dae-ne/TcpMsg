@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace Server
+namespace TcpMsg.Server
 {
     class ClientSocket
     {
