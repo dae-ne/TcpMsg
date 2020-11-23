@@ -37,7 +37,6 @@ namespace Server
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
-                _connectionsManager.AddToUnregisterQueue(this);
             }
 
             return bytes.Where((_, i) => i < length).ToArray();
@@ -54,7 +53,6 @@ namespace Server
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
-                _connectionsManager.AddToUnregisterQueue(this);
             }
         }
     }

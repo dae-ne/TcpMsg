@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,7 +10,7 @@ namespace Server
     {
         private ConnectionsManager _connections = new ConnectionsManager();
 
-        public async Task Run(string ip, int port)
+        public void Run(string ip, int port)
         {
             var cts = new CancellationTokenSource();
             var ipAddress = IPAddress.Parse(ip);
@@ -20,10 +19,9 @@ namespace Server
             try
             {
                 listener.Start();
-                _ = AcceptClientsAsync(listener, cts.Token);
-                _ = StartListeningAsync(cts.Token);
                 Console.WriteLine("Server started");
                 Console.WriteLine("Waiting for connections . . .");
+                _ = AcceptClientsAsync(listener, cts.Token);
                 Console.WriteLine("Press <enter> to quit\n");
                 Console.ReadLine();
             }
@@ -42,56 +40,41 @@ namespace Server
             {
                 var client = await listener.AcceptTcpClientAsync()
                                                  .ConfigureAwait(false);
-                var newClientObject = new ClientSocket(_connections, client);
-                _connections.Register(newClientObject);
-                Console.WriteLine($"New client ({clientCounter++}) connected");
-                //clientCounter++;
-                //_ = EchoAsync(client, clientCounter, ct);
+                clientCounter++;
+                _ = ManageConnection(client, ct, clientCounter);
             }
         }
 
-        private async Task StartListeningAsync(CancellationToken ct)
+        private async Task ManageConnection(TcpClient client, CancellationToken ct, int clientIndex)
         {
-            while (!ct.IsCancellationRequested)
+            Console.WriteLine($"New client (id: {clientIndex}) connected");
+            var newClientObject = new ClientSocket(_connections, client);
+            _connections.Register(newClientObject);
+            var stream = client.GetStream();
+
+            while (_connections.Contains(newClientObject)
+                && !ct.IsCancellationRequested)
             {
-                await _connections.ListenToAllAsync()
-                                  .ConfigureAwait(false);
-            }
-        }
-
-        private async Task EchoAsync(TcpClient client,
-                             int clientIndex,
-                             CancellationToken ct)
-        {
-            Console.WriteLine($"New client ({clientIndex}) connected");
-
-            using (client)
-            {
-                var buf = new byte[4096];
-                var stream = client.GetStream();
-
-                while (!ct.IsCancellationRequested)
+                try
                 {
-                    var timeoutTask = Task.Delay(TimeSpan.FromSeconds(15));
-                    var amountReadTask = stream.ReadAsync(buf, 0, buf.Length, ct);
-                    var completedTask = await Task.WhenAny(timeoutTask, amountReadTask)
-                                                  .ConfigureAwait(false);
+                    var buf = new byte[4096];
+                    var length = await stream.ReadAsync(buf, 0, buf.Length, ct);
 
-                    if (completedTask == timeoutTask)
+                    if (length > 0)
                     {
-                        var msg = Encoding.ASCII.GetBytes("Client timed out");
-                        await stream.WriteAsync(msg, 0, msg.Length);
-                        break;
+                        await stream.WriteAsync(buf, 0, length, ct)
+                                    .ConfigureAwait(false);
                     }
-
-                    var amountRead = amountReadTask.Result;
-                    if (amountRead == 0) break;
-                    await stream.WriteAsync(buf, 0, amountRead, ct)
-                                .ConfigureAwait(false);
                 }
+                catch
+                {
+                    _connections.Unregister(newClientObject);
+                }
+
+                await Task.Delay(100);
             }
 
-            Console.WriteLine($"Client ({clientIndex}) disconnected");
+            Console.WriteLine($"Client (id: {clientIndex}) disconnected");
         }
     }
 }
