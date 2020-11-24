@@ -8,8 +8,6 @@ namespace TcpMsg.Server
     {
         private readonly List<ClientSocket> _sockets = new List<ClientSocket>();
 
-        public int NumberOfClients => _sockets.Count;
-
         public bool Contains(ClientSocket client) => _sockets.Contains(client);
 
         public void Register(ClientSocket socket) => _sockets.Add(socket);

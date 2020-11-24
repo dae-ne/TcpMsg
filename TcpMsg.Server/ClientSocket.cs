@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace TcpMsg.Server
@@ -8,6 +10,9 @@ namespace TcpMsg.Server
     {
         private readonly ConnectionsManager _connectionsManager;
         private readonly TcpClient _socket;
+        private const string CancelMsg = "<<disconnectme>>";
+
+        private int CancelMsgSize => CancelMsg.Length;
 
         public ClientSocket(ConnectionsManager connectionsManager, TcpClient socket)
         {
@@ -24,8 +29,27 @@ namespace TcpMsg.Server
             try
             {
                 var stream = _socket.GetStream();
-                length = await stream.ReadAsync(bytes)
-                                         .ConfigureAwait(false);
+                length = await stream.ReadAsync(bytes);
+                DisconnectAfterCancelMsg(bytes, length);
+                var streamSize = BitConverter.ToInt32(bytes);
+
+                if (length < 1 || streamSize < 1)
+                {
+                    return Array.Empty<byte>();
+                }
+
+                //Console.WriteLine(streamSize);
+                bytes = new byte[streamSize];
+                length = await stream.ReadAsync(bytes);
+                var responsedata = Encoding.UTF8.GetString(bytes, 0, length);
+                //Console.WriteLine(responsedata);
+                DisconnectAfterCancelMsg(bytes, length);
+
+                if (streamSize != length)
+                {
+                    Console.WriteLine("There is a problem with a recived message");
+                    return Array.Empty<byte>();
+                }
             }
             catch
             {
@@ -40,8 +64,9 @@ namespace TcpMsg.Server
             try
             {
                 var stream = _socket.GetStream();
-                await stream.WriteAsync(data, 0, length)
-                            .ConfigureAwait(false);
+                var streamSize = BitConverter.GetBytes(length);
+                await stream.WriteAsync(streamSize, 0, streamSize.Length);
+                await stream.WriteAsync(data, 0, length);
             }
             catch
             {
@@ -51,8 +76,24 @@ namespace TcpMsg.Server
 
         public void CloseConnection()
         {
+            _socket.GetStream().Close();
             _socket.Close();
             _connectionsManager.Unregister(this);
+        }
+
+        private void DisconnectAfterCancelMsg(byte[] data, int length)
+        {
+            if (length == CancelMsgSize)
+            {
+                var msg = Encoding.UTF8.GetString(data, 0, length);
+                //Console.WriteLine(msg);
+
+                if (msg.Equals(CancelMsg))
+                {
+                    //CloseConnection();
+                    throw new Exception();
+                }
+            }
         }
     }
 }

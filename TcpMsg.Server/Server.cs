@@ -58,16 +58,6 @@ namespace TcpMsg.Server
             }
 
             Console.WriteLine($"Client (id: {clientIndex}) disconnected");
-            var numberOfClients = _connectionsManager.NumberOfClients;
-
-            if (numberOfClients == 1)
-            {
-                Console.WriteLine("1 client connected");
-            }
-            else
-            {
-                Console.WriteLine($"{numberOfClients} clients connected");
-            }
         }
     }
 }
