@@ -41,7 +41,7 @@ namespace TcpMsg.Server
                 //Console.WriteLine(streamSize);
                 bytes = new byte[streamSize];
                 length = await stream.ReadAsync(bytes);
-                var responsedata = Encoding.UTF8.GetString(bytes, 0, length);
+                var responseData = Encoding.UTF8.GetString(bytes, 0, length);
                 //Console.WriteLine(responsedata);
                 DisconnectAfterCancelMsg(bytes, length);
 
