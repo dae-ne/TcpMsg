@@ -4,51 +4,101 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="TcpMsg" Height="600" Width="600"
+        Title="TcpMsg" Height="600" Width="800"
         MinHeight="400" MinWidth="500" x:Name="win">
 
     <Window.Resources>
-        <Style x:Key="ButtonStyle" TargetType="Button" >
-            <Setter Property="Margin" Value="5" />
+        <Style TargetType="Button" >
+            <Setter Property="Margin" Value="3" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border CornerRadius="15" Background="DarkOliveGreen">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Cursor" Value="Hand" />
+                    <Setter Property="Opacity" Value="0.6" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
-        <Style x:Key="TextBlockStyle" TargetType="TextBlock" >
+
+        <Style x:Key="PathTextStyle" TargetType="TextBlock" >
             <Setter Property="Margin" Value="5" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style TargetType="TextBox" >
+            <Setter Property="Margin" Value="5" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="BorderBrush" Value="Black" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="DarkOliveGreen" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="Rectangle">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="Fill" Value="LightGray" />
         </Style>
     </Window.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="150" />
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="1" />
+            <ColumnDefinition Width="100" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
-            <RowDefinition Height="3" />
+            <RowDefinition Height="1" />
             <RowDefinition Height="40" />
             <RowDefinition Height="40" />
             <RowDefinition Height="40" />
             <RowDefinition Height="40" />
         </Grid.RowDefinitions>
 
+        <Grid x:Name="MessageGrid" Grid.ColumnSpan="100" Background="Black">
+            
+        </Grid>
+
         <!--<TextBlock x:Name="textBlock" Grid.ColumnSpan="2" />-->
-        <Image x:Name="image" Grid.ColumnSpan="2" Stretch="Uniform" />
+        <Image x:Name="image" Grid.ColumnSpan="100" Stretch="Uniform" />
 
-        <Rectangle Grid.Row="1" Grid.ColumnSpan="2" Fill="LightGray"
-                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+        <Rectangle Grid.Row="1" Grid.ColumnSpan="100" />
 
-        <Button Grid.Row="2" Content="Select picture" 
-               Style="{StaticResource ButtonStyle}" Click="SelectPictureBt_Click" />
+        <Button Grid.Column="0" Grid.Row="2" Content="Select picture"
+                Click="SelectPictureBt_Click" />
         <TextBlock x:Name="ImgUriTextBlock" Grid.Row="2" Grid.Column="1"
-                   Style="{StaticResource TextBlockStyle}" />
-        
-        <Button Grid.Row="3" Content="Select audio file"
-                Style="{StaticResource ButtonStyle}" Click="SelectAudioFileBt_Click" />
-        <TextBlock x:Name="AudioUriTextBlock" Grid.Row="3" Grid.Column="1"
-                   Style="{StaticResource TextBlockStyle}" />
-        
-        <TextBox x:Name="MsgTextBox" Grid.Row="4" Grid.ColumnSpan="2" Margin="5" TextChanged="MsgTextBox_TextChanged" />
+                   Style="{StaticResource PathTextStyle}" />
 
-        <Button Grid.Row="5" Grid.ColumnSpan="2" Content="Send"
-                Style="{StaticResource ButtonStyle}" Click="SendBt_Click" />
+        <Button Grid.Column="0" Grid.Row="3" Content="Select audio file"
+                Click="SelectAudioFileBt_Click" />
+        <TextBlock x:Name="AudioUriTextBlock" Grid.Row="3" Grid.Column="1"
+                   Style="{StaticResource PathTextStyle}" />
+        
+        <TextBox x:Name="MsgTextBox" Grid.Row="4" Grid.Column="0"
+                 Grid.ColumnSpan="2" TextChanged="MsgTextBox_TextChanged" />
+
+        <Button Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="2"
+                Content="Send" Click="SendBt_Click" />
+
+        <Rectangle Grid.Row="1" Grid.Column="2" Grid.RowSpan="100" />
+
+        <Button Grid.Column="3" Grid.Row="2" Content="Next message" />
+        <TextBlock Grid.Column="3" Grid.Row="3" Text="Number of messages:" TextWrapping="Wrap"
+                   VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" />
+        <TextBlock Grid.Column="3" Grid.Row="4" Text="10" HorizontalAlignment="Center" FontSize="30" />
+        <Button Grid.Column="3" Grid.Row="5" Content="Save message" />
+
     </Grid>
 </Window>

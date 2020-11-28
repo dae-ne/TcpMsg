@@ -39,7 +39,7 @@ namespace TcpMsg.Server
             while (!ct.IsCancellationRequested)
             {
                 var client = await listener.AcceptTcpClientAsync()
-                                                 .ConfigureAwait(false);
+                                           .ConfigureAwait(false);
                 clientCounter++;
                 _ = HandleConnection(client, ct, clientCounter);
             }
