@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 
 namespace TcpMsg.Client
@@ -13,10 +14,12 @@ namespace TcpMsg.Client
     {
         private const string DisconnectMessage = "<<disconnectme>>";
         private TcpClient _client = null;
+        private bool _isSending = false;
 
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = this;
 
             try
             {
@@ -61,7 +64,10 @@ namespace TcpMsg.Client
                         bitmap.StreamSource = ms;
                         bitmap.CacheOption = BitmapCacheOption.OnLoad;
                         bitmap.EndInit();
-                        image.Source = bitmap;
+                        var img = new Image();
+                        img.Source = bitmap;
+                        MessageGrid.Children.Add(img);
+                        //image.Source = bitmap;
                     }
                 }
                 catch
@@ -123,24 +129,33 @@ namespace TcpMsg.Client
 
         private async void SendBt_Click(object sender, RoutedEventArgs e)
         {
-            if (MsgTextBox.Text != "")
+            MsgTextBox.Text = "";
+
+            if (!_isSending)
             {
-                await SendMessage(MsgTextBox.Text);
-                MsgTextBox.Text = "";
-            }
-            else if (ImgUriTextBlock.Text != "")
-            {
-                var bitmapImage = new BitmapImage(new Uri(ImgUriTextBlock.Text));
-                var encoder = new JpegBitmapEncoder();
-                encoder.Frames.Add(BitmapFrame.Create(bitmapImage));
-                using MemoryStream ms = new MemoryStream();
-                encoder.Save(ms);
-                var data = ms.ToArray();
-                await SendBytes(data);
+                _isSending = true;
+
+                if (MsgTextBox.Text != "")
+                {
+                    await SendMessage(MsgTextBox.Text);
+                    MsgTextBox.Text = "";
+                }
+                else if (ImgUriTextBlock.Text != "")
+                {
+                    var bitmapImage = new BitmapImage(new Uri(ImgUriTextBlock.Text));
+                    var encoder = new JpegBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create(bitmapImage));
+                    using MemoryStream ms = new MemoryStream();
+                    encoder.Save(ms);
+                    var data = ms.ToArray();
+                    await SendBytes(data);
+                }
+
+                await Task.Delay(2000);
+                _isSending = false;
             }
 
-            await SendMessage(MsgTextBox.Text);
-            MsgTextBox.Text = "";
+            //await SendMessage(MsgTextBox.Text);
         }
 
         private async Task SendMessage(string message, bool withSize = true)
