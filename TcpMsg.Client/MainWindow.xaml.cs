@@ -1,31 +1,32 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.IO;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using TcpMsg.Client.MsgEncoding;
 
 namespace TcpMsg.Client
 {
     public partial class MainWindow : Window
     {
-        private const string DisconnectMessage = "<<disconnectme>>";
-        private TcpClient _client = null;
+        //private const string DisconnectMessage = "<<disconnectme>>";
+        //private TcpClient _client = null;
+        private Connection _connection;
+        private ToSendConverter _toSendConverter;
+        private ToDisplayConverter _toDisplayConverter;
         private bool _isSending = false;
 
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = this;
+            this.DataContext = _connection;
+            SetEncodingChains();
 
             try
             {
-                _client = new TcpClient("127.0.0.1", 11000);
-                this.Closed += new EventHandler(MainWindow_Closed);
-                _ = StartListeningAsync();
+                //_client = new TcpClient("127.0.0.1", 11000);
+                _connection = new Connection("127.0.0.1", 11000);
+                Closed += new EventHandler(MainWindow_Closed);
+                _ = _connection.StartListeningAsync();
             }
             catch (Exception e)
             {
@@ -36,56 +37,57 @@ namespace TcpMsg.Client
             }
         }
 
-        private async Task StartListeningAsync()
-        {
-            var stream = _client.GetStream();
+        //private async Task StartListeningAsync()
+        //{
+        //    var stream = _client.GetStream();
 
-            for (; ; )
-            {
-                try
-                {
-                    var data = new byte[1024];
-                    var length = await stream.ReadAsync(data, 0, data.Length);
+        //    for (; ; )
+        //    {
+        //        try
+        //        {
+        //            var data = new byte[1024];
+        //            var length = await stream.ReadAsync(data, 0, data.Length);
 
-                    if (length > 0)
-                    {
-                        var streamSize = BitConverter.ToInt32(data);
-                        data = new byte[streamSize];
-                        length = await stream.ReadAsync(data, 0, data.Length);
+        //            if (length > 0)
+        //            {
+        //                var streamSize = BitConverter.ToInt32(data);
+        //                data = new byte[streamSize];
+        //                length = await stream.ReadAsync(data, 0, data.Length);
 
-                        if (streamSize != length)
-                        {
-                            MessageBox.Show("There is a problem with a recived message.");
-                        }
+        //                if (streamSize != length)
+        //                {
+        //                    MessageBox.Show("There is a problem with a recived message.");
+        //                }
 
-                        using var ms = new MemoryStream(data);
-                        var bitmap = new BitmapImage();
-                        bitmap.BeginInit();
-                        bitmap.StreamSource = ms;
-                        bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                        bitmap.EndInit();
-                        var img = new Image();
-                        img.Source = bitmap;
-                        MessageGrid.Children.Add(img);
-                        //image.Source = bitmap;
-                    }
-                }
-                catch
-                {
-                    Application.Current.Shutdown();
-                }
+        //                using var ms = new MemoryStream(data);
+        //                var bitmap = new BitmapImage();
+        //                bitmap.BeginInit();
+        //                bitmap.StreamSource = ms;
+        //                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+        //                bitmap.EndInit();
+        //                var img = new Image();
+        //                img.Source = bitmap;
+        //                MessageGrid.Children.Add(img);
+        //                //image.Source = bitmap;
+        //            }
+        //        }
+        //        catch
+        //        {
+        //            Application.Current.Shutdown();
+        //        }
                 
-                await Task.Delay(300);
-            }
-        }
+        //        await Task.Delay(300);
+        //    }
+        //}
 
         private async void MainWindow_Closed(object sender, EventArgs e)
         {
             try
             {
-                await SendMessage(DisconnectMessage, false);
-                _client.GetStream().Close();
-                _client.Close();
+                await _connection.SendDisconnectMessage();
+                //_client.GetStream().Close();
+                //_client.Close();
+                _connection.Disconnect();
             }
             catch { }
         }
@@ -129,59 +131,109 @@ namespace TcpMsg.Client
 
         private async void SendBt_Click(object sender, RoutedEventArgs e)
         {
-            MsgTextBox.Text = "";
+            //MsgTextBox.Text = "";
+            object message = null;
 
-            if (!_isSending)
+            //if (!_isSending)
+            //{
+                //_isSending = true;
+
+            if (MsgTextBox.Text != "")
             {
-                _isSending = true;
-
-                if (MsgTextBox.Text != "")
-                {
-                    await SendMessage(MsgTextBox.Text);
-                    MsgTextBox.Text = "";
-                }
-                else if (ImgUriTextBlock.Text != "")
-                {
-                    var bitmapImage = new BitmapImage(new Uri(ImgUriTextBlock.Text));
-                    var encoder = new JpegBitmapEncoder();
-                    encoder.Frames.Add(BitmapFrame.Create(bitmapImage));
-                    using MemoryStream ms = new MemoryStream();
-                    encoder.Save(ms);
-                    var data = ms.ToArray();
-                    await SendBytes(data);
-                }
-
-                await Task.Delay(2000);
-                _isSending = false;
+                //var message =_toSendConverter();
+                //await SendMessage(MsgTextBox.Text);
+                message = MsgTextBox.Text;
+                MsgTextBox.Text = "";
             }
+            else if (ImgUriTextBlock.Text != "")
+            {
+                //var bitmapImage = new BitmapImage(new Uri(ImgUriTextBlock.Text));
+                //var encoder = new JpegBitmapEncoder();
+                //encoder.Frames.Add(BitmapFrame.Create(bitmapImage));
+                //using MemoryStream ms = new MemoryStream();
+                //encoder.Save(ms);
+                //var data = ms.ToArray();
+                ////await SendBytes(data);
+                //await _connection.Send(data);
+                message = new BitmapImage(new Uri(ImgUriTextBlock.Text));
+                ImgUriTextBlock.Text = "";
+            }
+
+            if (message != null)
+            {
+                try
+                {
+                    var convertedMessage = _toSendConverter.Convert(message);
+                    await _connection.Send(convertedMessage);
+                }
+                catch { }
+            }
+
+                //await Task.Delay(2000);
+                //_isSending = false;
+            //}
 
             //await SendMessage(MsgTextBox.Text);
         }
 
-        private async Task SendMessage(string message, bool withSize = true)
+        private void NextMsgBt_Click(object sender, RoutedEventArgs e)
         {
-            var data = Encoding.UTF8.GetBytes(message);
-            await SendBytes(data, withSize);
-        }
+            var message = _connection.NextMessage();
 
-        private async Task SendBytes(byte[] data, bool withSize = true)
-        {
-            try
+            if (message.Length > 0)
             {
-                var stream = _client.GetStream();
+                var messageType = _toDisplayConverter.Convert(message, out object receivedData);
 
-                if (withSize)
+                if (messageType == typeof(string))
                 {
-                    var streamSize = BitConverter.GetBytes(data.Length);
-                    await stream.WriteAsync(streamSize, 0, streamSize.Length);
+                    textBlock.Text = receivedData as string;
                 }
+                else if (messageType == typeof(BitmapImage))
+                {
+                    image.Source = receivedData as BitmapImage;
+                }
+                else if (messageType == typeof(int))
+                {
 
-                await stream.WriteAsync(data, 0, data.Length);
-            }
-            catch
-            {
-                Application.Current.Shutdown();
+                }
             }
         }
+
+        private void SetEncodingChains()
+        {
+            _toSendConverter = new TextToSendConverter();
+            var imgToSendConverter = new ImageToSendConverter();
+            _toSendConverter.SetNextConverter(imgToSendConverter);
+
+            _toDisplayConverter = new TextToDisplayConverter();
+            var imgToDisplayConverter = new ImageToDisplayConverter();
+            _toDisplayConverter.SetNextConverter(imgToDisplayConverter);
+        }
+
+        //private async Task SendMessage(string message, bool withSize = true)
+        //{
+        //    var data = Encoding.UTF8.GetBytes(message);
+        //    await SendBytes(data, withSize);
+        //}
+
+        //private async Task SendBytes(byte[] data, bool withSize = true)
+        //{
+        //    try
+        //    {
+        //        var stream = _client.GetStream();
+
+        //        if (withSize)
+        //        {
+        //            var streamSize = BitConverter.GetBytes(data.Length);
+        //            await stream.WriteAsync(streamSize, 0, streamSize.Length);
+        //        }
+
+        //        await stream.WriteAsync(data, 0, data.Length);
+        //    }
+        //    catch
+        //    {
+        //        Application.Current.Shutdown();
+        //    }
+        //}
     }
 }

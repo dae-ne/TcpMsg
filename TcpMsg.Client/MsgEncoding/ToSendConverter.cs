@@ -31,7 +31,7 @@ namespace TcpMsg.Client.MsgEncoding
             }
             else if (_nextConverter != null)
             {
-                _nextConverter.Convert(data);
+                return _nextConverter.Convert(data);
             }
 
             throw new Exception("Wrong data type");
