@@ -107,12 +107,11 @@
 
         <Rectangle Grid.Row="1" Grid.Column="2" Grid.RowSpan="100" />
 
-        <Button Grid.Column="3" Grid.Row="2" Content="Next message" Height="34" Margin="3,3,3,0"
-                VerticalAlignment="Top" Click="NextMsgBt_Click" />
+        <Button Grid.Column="3" Grid.Row="2" Content="Next message" Click="NextMsgBt_Click" />
         <TextBlock Grid.Column="3" Grid.Row="3" Text="Number of messages:" TextWrapping="Wrap"
                    VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" />
         <TextBlock x:Name="asdf" Grid.Column="3" Grid.Row="4" Text="10" HorizontalAlignment="Center" FontSize="30" />
-        <Button Grid.Column="3" Grid.Row="5" Content="Save message" />
+        <Button Grid.Column="3" Grid.Row="5" Content="Save message" Click="SaveBt_Click" />
 
     </Grid>
 </Window>

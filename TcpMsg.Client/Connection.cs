@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace TcpMsg.Client
 {
-    public class Connection : INotifyPropertyChanged
+    class Connection
     {
         private TcpClient _client = null;
         private Queue<byte[]> _newMessages = new Queue<byte[]>();
-
-        public event PropertyChangedEventHandler PropertyChanged = delegate { };
 
         public int NumberOfMessages => _newMessages.Count;
 
@@ -87,19 +84,6 @@ namespace TcpMsg.Client
                         }
 
                         _newMessages.Enqueue(data);
-                        //NumberOfMessages += "x";
-                        //OnPropertyChanged("NumberOfMessages");
-
-                        //using var ms = new MemoryStream(data);
-                        //var bitmap = new BitmapImage();
-                        //bitmap.BeginInit();
-                        //bitmap.StreamSource = ms;
-                        //bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                        //bitmap.EndInit();
-                        //var img = new Image();
-                        //img.Source = bitmap;
-                        //MessageGrid.Children.Add(img);
-                        //image.Source = bitmap;
                     }
                 }
                 catch
