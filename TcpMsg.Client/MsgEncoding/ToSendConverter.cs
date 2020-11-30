@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
+using TcpMsg.Client.Components;
 
 namespace TcpMsg.Client.MsgEncoding
 {
@@ -15,7 +16,7 @@ namespace TcpMsg.Client.MsgEncoding
             {
                 { typeof(string), (int)DataType.Text },
                 { typeof(BitmapImage), (int)DataType.Image },
-                { typeof(int), (int)DataType.Audio }
+                { typeof(Audio), (int)DataType.Audio }
             };
 
         public void SetNextConverter(ToSendConverter nextConverter)

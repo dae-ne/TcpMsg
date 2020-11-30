@@ -1,34 +1,48 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Media;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using TcpMsg.Client.Components;
 using TcpMsg.Client.MsgEncoding;
+using TcpMsg.Client.Pages;
 
 namespace TcpMsg.Client
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private const string IpAddress = "127.0.0.1";
         private const int Port = 11000;
-        private Connection _connection;
+        private readonly Connection _connection;
         private ToSendConverter _toSendConverter;
         private ToDisplayConverter _toDisplayConverter;
         private bool _isSending = false;
         private object _currentMessage = null;
+
+        private string myVar;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public string MyProperty
+        {
+            get { return myVar; }
+            set
+            {
+                myVar = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MyProperty)));
+            }
+        }
+
 
         public MainWindow()
         {
             InitializeComponent();
             //DataContext = _connection;
             SetEncodingChains();
-
-            var mp = new MediaElement();
-            mp.Source
             
             try
             {
@@ -49,7 +63,7 @@ namespace TcpMsg.Client
         {
             try
             {
-                await _connection.SendDisconnectMessage();
+                await _connection.SendDisconnectMessageAsync();
                 _connection.Disconnect();
             }
             catch { }
@@ -57,8 +71,10 @@ namespace TcpMsg.Client
 
         private void SelectPictureBt_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Image Files(*.jpg, *.jpeg, *.jpe, *.jfif, *.png) | *.jpg; *.jpeg; *.jpe; *.jfif; *.png";
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "Bitmap Image | *.bmp"
+            };
 
             if (openFileDialog.ShowDialog() == true)
             {
@@ -71,8 +87,10 @@ namespace TcpMsg.Client
 
         private void SelectAudioFileBt_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Audio Files(*.mp3, *.wav, *.acc, *wma) | *.mp3; *.wav; *.acc; *.wma";
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "Waveform | *.wav"
+            };
 
             if (openFileDialog.ShowDialog() == true)
             {
@@ -110,13 +128,29 @@ namespace TcpMsg.Client
                     message = new BitmapImage(new Uri(ImgUriTextBlock.Text));
                     ImgUriTextBlock.Text = "";
                 }
+                else if (AudioUriTextBlock.Text != "")
+                {
+                    var audio = new Audio();
+
+                    try
+                    {
+                        await audio.LoadFromFileAsync(AudioUriTextBlock.Text);
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+
+                    message = audio;
+                    AudioUriTextBlock.Text = "";
+                }
 
                 if (message != null)
                 {
                     try
                     {
                         var convertedMessage = _toSendConverter.Convert(message);
-                        await _connection.Send(convertedMessage);
+                        await _connection.SendAsync(convertedMessage);
                     }
                     catch { }
                 }
@@ -128,32 +162,35 @@ namespace TcpMsg.Client
 
         private void NextMsgBt_Click(object sender, RoutedEventArgs e)
         {
-            var message = _connection.NextMessage();
+            MyProperty = MyProperty + "a";
+            //var message = _connection.NextMessage();
 
-            if (message.Length > 0)
-            {
-                var messageType = _toDisplayConverter.Convert(message, out object receivedData);
-                _currentMessage = receivedData;
+            //if (message.Length > 0)
+            //{
+            //    var messageType = _toDisplayConverter.Convert(message, out object receivedData);
+            //    _currentMessage = receivedData;
 
-                if (messageType == typeof(string))
-                {
-                    textBlock.Text = receivedData as string;
-                }
-                else if (messageType == typeof(BitmapImage))
-                {
-                    image.Source = receivedData as BitmapImage;
-                }
-                else if (messageType == typeof(int))
-                {
-
-                }
-            }
+            //    if (messageType == typeof(string))
+            //    {
+            //        Main.Content = new TextPage(receivedData as string);
+            //    }
+            //    else if (messageType == typeof(BitmapImage))
+            //    {
+            //        Main.Content = new ImagePage(receivedData as BitmapImage);
+            //    }
+            //    else if (messageType == typeof(Audio))
+            //    {
+            //        Main.Content = new AudioPage(receivedData as Audio);
+            //    }
+            //}
         }
 
-        private void SaveBt_Click(object sender, RoutedEventArgs e)
+        private async void SaveBt_Click(object sender, RoutedEventArgs e)
         {
-            var saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Title = "Save a message";
+            var saveFileDialog = new SaveFileDialog
+            {
+                Title = "Save a message"
+            };
 
             if (_currentMessage.GetType() == typeof(string))
             {
@@ -161,23 +198,20 @@ namespace TcpMsg.Client
 
                 if (saveFileDialog.ShowDialog() == true)
                 {
-                    File.WriteAllText(saveFileDialog.FileName, textBlock.Text);
+                    await File.WriteAllTextAsync(saveFileDialog.FileName, _currentMessage as string);
                 }
             }
             else if (_currentMessage.GetType() == typeof(BitmapImage))
             {
-                saveFileDialog.Filter = "Jpeg Image | *.jpg | Bitmap Image | *.bmp | Png Image | *.png";
+                saveFileDialog.Filter = "Bitmap Image | *.bmp";
 
                 if (saveFileDialog.ShowDialog() == true)
                 {
                     var bitmap = (BitmapImage)_currentMessage;
-                    var encoder = new JpegBitmapEncoder();
+                    var encoder = new BmpBitmapEncoder();
                     encoder.Frames.Add(BitmapFrame.Create(bitmap));
-
-                    using (var stream = saveFileDialog.OpenFile())
-                    {
-                        encoder.Save(stream);
-                    }
+                    using var stream = saveFileDialog.OpenFile();
+                    encoder.Save(stream);
                 }
 
             }
@@ -185,47 +219,21 @@ namespace TcpMsg.Client
             {
 
             }
-
-            // If the file name is not an empty string open it for saving.
-            //if (saveFileDialog1.FileName != "")
-            //{
-            //    // Saves the Image via a FileStream created by the OpenFile method.
-            //    //FileStream fs = (FileStream)saveFileDialog1.OpenFile();
-            //    // Saves the Image in the appropriate ImageFormat based upon the
-            //    // File type selected in the dialog box.
-            //    // NOTE that the FilterIndex property is one-based.
-            //    //switch (saveFileDialog1.FilterIndex)
-            //    //{
-            //    //    case 1:
-            //    //        this.button2.Image.Save(fs,
-            //    //          System.Drawing.Imaging.ImageFormat.Jpeg);
-            //    //        break;
-
-            //    //    case 2:
-            //    //        this.button2.Image.Save(fs,
-            //    //          System.Drawing.Imaging.ImageFormat.Bmp);
-            //    //        break;
-
-            //    //    case 3:
-            //    //        this.button2.Image.Save(fs,
-            //    //          System.Drawing.Imaging.ImageFormat.Gif);
-            //    //        break;
-            //    //}
-
-
-            //    //fs.Close();
-            //}
         }
 
         private void SetEncodingChains()
         {
             _toSendConverter = new TextToSendConverter();
             var imgToSendConverter = new ImageToSendConverter();
+            var audioToSendConverter = new AudioToSendConverter();
             _toSendConverter.SetNextConverter(imgToSendConverter);
+            imgToSendConverter.SetNextConverter(audioToSendConverter);
 
             _toDisplayConverter = new TextToDisplayConverter();
             var imgToDisplayConverter = new ImageToDisplayConverter();
+            var audioToDisplayConverter = new AudioToDisplayConverter();
             _toDisplayConverter.SetNextConverter(imgToDisplayConverter);
+            imgToDisplayConverter.SetNextConverter(audioToDisplayConverter);
         }
     }
 }

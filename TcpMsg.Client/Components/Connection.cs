@@ -1,15 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TcpMsg.Client
+namespace TcpMsg.Client.Components
 {
-    class Connection
+    class Connection : INotifyPropertyChanged
     {
         private TcpClient _client = null;
-        private Queue<byte[]> _newMessages = new Queue<byte[]>();
+        private readonly Queue<byte[]> _newMessages = new Queue<byte[]>();
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private string myVar;
+
+        public string MyProperty
+        {
+            get { return myVar; }
+            set
+            {
+                myVar = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NumberOfMessages)));
+            }
+        }
 
         public int NumberOfMessages => _newMessages.Count;
 
@@ -84,6 +99,7 @@ namespace TcpMsg.Client
                         }
 
                         _newMessages.Enqueue(data);
+                        MyProperty = MyProperty + "a";
                     }
                 }
                 catch
@@ -95,7 +111,7 @@ namespace TcpMsg.Client
             }
         }
 
-        public async Task Send(byte[] data)
+        public async Task SendAsync(byte[] data)
         {
             try
             {
@@ -110,7 +126,7 @@ namespace TcpMsg.Client
             }
         }
 
-        public async Task SendDisconnectMessage()
+        public async Task SendDisconnectMessageAsync()
         {
             try
             {

@@ -14,7 +14,7 @@ namespace TcpMsg.Client.MsgEncoding
 
         protected override byte[] ConvertThisType(object data)
         {
-            var encoder = new JpegBitmapEncoder();
+            var encoder = new BmpBitmapEncoder();
             encoder.Frames.Add(BitmapFrame.Create(data as BitmapImage));
             using MemoryStream ms = new MemoryStream();
             encoder.Save(ms);
