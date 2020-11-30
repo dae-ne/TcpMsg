@@ -109,7 +109,7 @@
         <Button Grid.Column="3" Grid.Row="2" Content="Next message" Click="NextMsgBt_Click" />
         <TextBlock Grid.Column="3" Grid.Row="3" Text="Number of messages:" TextWrapping="Wrap"
                    VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" />
-        <TextBlock x:Name="asdf" Grid.Column="3" Grid.Row="4" Text="{Binding MyProperty}" HorizontalAlignment="Center" FontSize="30" />
+        <TextBlock x:Name="messageCounter" Grid.Column="3" Grid.Row="4" Text="{Binding MyProperty}" HorizontalAlignment="Center" FontSize="30" />
         <Button Grid.Column="3" Grid.Row="5" Content="Save message" Click="SaveBt_Click" />
 
     </Grid>

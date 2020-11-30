@@ -1,8 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.ComponentModel;
 using System.IO;
-using System.Media;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,7 +11,7 @@ using TcpMsg.Client.Pages;
 
 namespace TcpMsg.Client
 {
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : Window
     {
         private const string IpAddress = "127.0.0.1";
         private const int Port = 11000;
@@ -23,32 +21,17 @@ namespace TcpMsg.Client
         private bool _isSending = false;
         private object _currentMessage = null;
 
-        private string myVar;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public string MyProperty
-        {
-            get { return myVar; }
-            set
-            {
-                myVar = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MyProperty)));
-            }
-        }
-
-
         public MainWindow()
         {
             InitializeComponent();
-            //DataContext = _connection;
             SetEncodingChains();
+            messageCounter.Text = "0";
             
             try
             {
                 _connection = new Connection(IpAddress, Port);
                 Closed += new EventHandler(MainWindow_Closed);
-                _ = _connection.StartListeningAsync();
+                _ = _connection.StartListeningAsync(messageCounter);
             }
             catch (Exception e)
             {
@@ -162,27 +145,27 @@ namespace TcpMsg.Client
 
         private void NextMsgBt_Click(object sender, RoutedEventArgs e)
         {
-            MyProperty = MyProperty + "a";
-            //var message = _connection.NextMessage();
+            var message = _connection.NextMessage();
+            messageCounter.Text = _connection.NumberOfMessages.ToString();
 
-            //if (message.Length > 0)
-            //{
-            //    var messageType = _toDisplayConverter.Convert(message, out object receivedData);
-            //    _currentMessage = receivedData;
+            if (message.Length > 0)
+            {
+                var messageType = _toDisplayConverter.Convert(message, out object receivedData);
+                _currentMessage = receivedData;
 
-            //    if (messageType == typeof(string))
-            //    {
-            //        Main.Content = new TextPage(receivedData as string);
-            //    }
-            //    else if (messageType == typeof(BitmapImage))
-            //    {
-            //        Main.Content = new ImagePage(receivedData as BitmapImage);
-            //    }
-            //    else if (messageType == typeof(Audio))
-            //    {
-            //        Main.Content = new AudioPage(receivedData as Audio);
-            //    }
-            //}
+                if (messageType == typeof(string))
+                {
+                    Main.Content = new TextPage(receivedData as string);
+                }
+                else if (messageType == typeof(BitmapImage))
+                {
+                    Main.Content = new ImagePage(receivedData as BitmapImage);
+                }
+                else if (messageType == typeof(Audio))
+                {
+                    Main.Content = new AudioPage(receivedData as Audio);
+                }
+            }
         }
 
         private async void SaveBt_Click(object sender, RoutedEventArgs e)

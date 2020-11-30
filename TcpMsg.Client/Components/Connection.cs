@@ -1,30 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace TcpMsg.Client.Components
 {
-    class Connection : INotifyPropertyChanged
+    class Connection
     {
         private TcpClient _client = null;
         private readonly Queue<byte[]> _newMessages = new Queue<byte[]>();
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private string myVar;
-
-        public string MyProperty
-        {
-            get { return myVar; }
-            set
-            {
-                myVar = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NumberOfMessages)));
-            }
-        }
 
         public int NumberOfMessages => _newMessages.Count;
 
@@ -76,7 +62,7 @@ namespace TcpMsg.Client.Components
             catch { }
         }
 
-        public async Task StartListeningAsync()
+        public async Task StartListeningAsync(TextBlock messageCounter)
         {
             var stream = _client.GetStream();
 
@@ -99,7 +85,7 @@ namespace TcpMsg.Client.Components
                         }
 
                         _newMessages.Enqueue(data);
-                        MyProperty = MyProperty + "a";
+                        messageCounter.Text = NumberOfMessages.ToString();
                     }
                 }
                 catch
