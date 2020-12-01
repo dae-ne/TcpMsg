@@ -38,11 +38,9 @@ namespace TcpMsg.Server
                     return Array.Empty<byte>();
                 }
 
-                //Console.WriteLine(streamSize);
                 bytes = new byte[streamSize];
                 length = await stream.ReadAsync(bytes);
                 var responseData = Encoding.UTF8.GetString(bytes, 0, length);
-                //Console.WriteLine(responsedata);
                 DisconnectAfterCancelMsg(bytes, length);
 
                 if (streamSize != length)
@@ -65,7 +63,7 @@ namespace TcpMsg.Server
             {
                 var stream = _socket.GetStream();
                 var streamSize = BitConverter.GetBytes(length);
-                await stream.WriteAsync(streamSize, 0, streamSize.Length);
+                await stream.WriteAsync(streamSize);
                 await stream.WriteAsync(data, 0, length);
             }
             catch
@@ -86,11 +84,9 @@ namespace TcpMsg.Server
             if (length == CancelMsgSize)
             {
                 var msg = Encoding.UTF8.GetString(data, 0, length);
-                //Console.WriteLine(msg);
 
                 if (msg.Equals(CancelMsg))
                 {
-                    //CloseConnection();
                     throw new Exception();
                 }
             }

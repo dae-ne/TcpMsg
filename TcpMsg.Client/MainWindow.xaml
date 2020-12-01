@@ -4,8 +4,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:client="clr-namespace:TcpMsg.Client"
-        xmlns:components="clr-namespace:TcpMsg.Client.Components"
-        d:DataContext="{d:DesignInstance Type=components:Connection}"
         mc:Ignorable="d"
         Title="TcpMsg" Height="600" Width="800"
         MinHeight="400" MinWidth="500" x:Name="win">
@@ -109,7 +107,7 @@
         <Button Grid.Column="3" Grid.Row="2" Content="Next message" Click="NextMsgBt_Click" />
         <TextBlock Grid.Column="3" Grid.Row="3" Text="Number of messages:" TextWrapping="Wrap"
                    VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" />
-        <TextBlock x:Name="messageCounter" Grid.Column="3" Grid.Row="4" Text="{Binding MyProperty}" HorizontalAlignment="Center" FontSize="30" />
+        <TextBlock x:Name="messageCounter" Grid.Column="3" Grid.Row="4" HorizontalAlignment="Center" FontSize="30" />
         <Button Grid.Column="3" Grid.Row="5" Content="Save message" Click="SaveBt_Click" />
 
     </Grid>

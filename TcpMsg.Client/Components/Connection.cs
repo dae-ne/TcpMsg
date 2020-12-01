@@ -71,13 +71,13 @@ namespace TcpMsg.Client.Components
                 try
                 {
                     var data = new byte[1024];
-                    var length = await stream.ReadAsync(data, 0, data.Length);
+                    var length = await stream.ReadAsync(data);
 
                     if (length > 0)
                     {
                         var streamSize = BitConverter.ToInt32(data);
                         data = new byte[streamSize];
-                        length = await stream.ReadAsync(data, 0, data.Length);
+                        length = await stream.ReadAsync(data);
 
                         if (streamSize != length)
                         {
@@ -103,8 +103,8 @@ namespace TcpMsg.Client.Components
             {
                 var stream = _client.GetStream();
                 var streamSize = BitConverter.GetBytes(data.Length);
-                await stream.WriteAsync(streamSize, 0, streamSize.Length);
-                await stream.WriteAsync(data, 0, data.Length);
+                await stream.WriteAsync(streamSize);
+                await stream.WriteAsync(data);
             }
             catch
             {
@@ -118,7 +118,7 @@ namespace TcpMsg.Client.Components
             {
                 var stream = _client.GetStream();
                 var data = Encoding.UTF8.GetBytes("<<disconnectme>>");
-                await stream.WriteAsync(data, 0, data.Length);
+                await stream.WriteAsync(data);
             }
             catch
             {
