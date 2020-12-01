@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
-using TcpMsg.Client.Audio;
+using TcpMsg.Client.Media;
 using TcpMsg.Client.MsgEncoding;
 using TcpMsg.Client.Pages;
 
@@ -113,7 +113,7 @@ namespace TcpMsg.Client
                 }
                 else if (AudioUriTextBlock.Text != "")
                 {
-                    var audio = new Audio.Audio();
+                    var audio = new Media.Audio();
 
                     try
                     {
@@ -161,9 +161,9 @@ namespace TcpMsg.Client
                 {
                     Main.Content = new ImagePage(receivedData as BitmapImage);
                 }
-                else if (messageType == typeof(Audio.Audio))
+                else if (messageType == typeof(Media.Audio))
                 {
-                    Main.Content = new AudioPage(receivedData as Audio.Audio);
+                    Main.Content = new AudioPage(receivedData as Media.Audio);
                 }
             }
         }

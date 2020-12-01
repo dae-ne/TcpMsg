@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using TcpMsg.Client.Audio;
+using TcpMsg.Client.Media;
 
 namespace TcpMsg.Client.MsgEncoding
 {
@@ -15,7 +15,7 @@ namespace TcpMsg.Client.MsgEncoding
         {
             var newData = data.ToList();
             newData.RemoveRange(0, 4);
-            dataToDisplay = new Audio.Audio(newData.ToArray());
+            dataToDisplay = new Media.Audio(newData.ToArray());
             return dataToDisplay.GetType();
         }
     }

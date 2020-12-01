@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using TcpMsg.Client.Audio;
+using TcpMsg.Client.Media;
 
 namespace TcpMsg.Client.MsgEncoding
 {
@@ -14,7 +14,7 @@ namespace TcpMsg.Client.MsgEncoding
         protected override byte[] ConvertThisType(object data)
         {
             var result = BitConverter.GetBytes((int)_type).ToList();
-            result.AddRange(((Audio.Audio)data).Bytes);
+            result.AddRange(((Media.Audio)data).Bytes);
             return result.ToArray();
         }
     }

@@ -15,7 +15,7 @@ namespace TcpMsg.Client.MsgEncoding
             {
                 { typeof(string), (int)DataType.Text },
                 { typeof(BitmapImage), (int)DataType.Image },
-                { typeof(Audio.Audio), (int)DataType.Audio }
+                { typeof(Media.Audio), (int)DataType.Audio }
             };
 
         public void SetNextConverter(ToBytesConverter nextConverter)
