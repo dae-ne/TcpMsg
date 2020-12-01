@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using TcpMsg.Client.FileIO;
 using TcpMsg.Client.Media;
 using TcpMsg.Client.MsgEncoding;
 using TcpMsg.Client.Pages;
@@ -16,8 +17,8 @@ namespace TcpMsg.Client
         private const string IpAddress = "127.0.0.1";
         private const int Port = 11000;
         private readonly Connection _connection;
-        private ToBytesConverter _toSendConverter;
-        private ToObjectConverter _toDisplayConverter;
+        private ToBytesConverter _toBytesConverter;
+        private ToObjectConverter _toObjectConverter;
         private bool _isSending = false;
         private object _currentMessage = null;
 
@@ -54,32 +55,16 @@ namespace TcpMsg.Client
 
         private void SelectPictureBt_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new OpenFileDialog
-            {
-                Filter = "Bitmap Image | *.bmp"
-            };
-
-            if (openFileDialog.ShowDialog() == true)
-            {
-                ImgUriTextBlock.Text = openFileDialog.FileName;
-            }
-
+            var uriReader = new Reader(DataType.Image);
+            ImgUriTextBlock.Text = uriReader.GetUriDialog();
             AudioUriTextBlock.Text = "";
             MsgTextBox.Text = "";
         }
 
         private void SelectAudioFileBt_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new OpenFileDialog
-            {
-                Filter = "Waveform | *.wav"
-            };
-
-            if (openFileDialog.ShowDialog() == true)
-            {
-                AudioUriTextBlock.Text = openFileDialog.FileName;
-            }
-
+            var uriReader = new Reader(DataType.Audio);
+            AudioUriTextBlock.Text = uriReader.GetUriDialog();
             ImgUriTextBlock.Text = "";
             MsgTextBox.Text = "";
         }
@@ -113,7 +98,7 @@ namespace TcpMsg.Client
                 }
                 else if (AudioUriTextBlock.Text != "")
                 {
-                    var audio = new Media.Audio();
+                    var audio = new Audio();
 
                     try
                     {
@@ -132,7 +117,7 @@ namespace TcpMsg.Client
                 {
                     try
                     {
-                        var convertedMessage = _toSendConverter.Convert(message);
+                        var convertedMessage = _toBytesConverter.Convert(message);
                         await _connection.SendAsync(convertedMessage);
                     }
                     catch { }
@@ -150,7 +135,7 @@ namespace TcpMsg.Client
 
             if (message.Length > 0)
             {
-                var messageType = _toDisplayConverter.Convert(message, out object receivedData);
+                var messageType = _toObjectConverter.Convert(message, out object receivedData);
                 _currentMessage = receivedData;
 
                 if (messageType == typeof(string))
@@ -161,7 +146,7 @@ namespace TcpMsg.Client
                 {
                     Main.Content = new ImagePage(receivedData as BitmapImage);
                 }
-                else if (messageType == typeof(Media.Audio))
+                else if (messageType == typeof(Audio))
                 {
                     Main.Content = new AudioPage(receivedData as Media.Audio);
                 }
@@ -170,52 +155,35 @@ namespace TcpMsg.Client
 
         private async void SaveBt_Click(object sender, RoutedEventArgs e)
         {
-            var saveFileDialog = new SaveFileDialog
-            {
-                Title = "Save a message"
-            };
-
             if (_currentMessage.GetType() == typeof(string))
             {
-                saveFileDialog.Filter = "txt file | *.txt";
-
-                if (saveFileDialog.ShowDialog() == true)
-                {
-                    await File.WriteAllTextAsync(saveFileDialog.FileName, _currentMessage as string);
-                }
+                var writer = new TxtWriter();
+                await writer.SaveToFile(_currentMessage);
             }
             else if (_currentMessage.GetType() == typeof(BitmapImage))
             {
-                saveFileDialog.Filter = "Bitmap Image | *.bmp";
-
-                if (saveFileDialog.ShowDialog() == true)
-                {
-                    var bitmap = (BitmapImage)_currentMessage;
-                    var encoder = new BmpBitmapEncoder();
-                    encoder.Frames.Add(BitmapFrame.Create(bitmap));
-                    using var stream = saveFileDialog.OpenFile();
-                    encoder.Save(stream);
-                }
-
+                var writer = new BmpWriter();
+                await writer.SaveToFile(_currentMessage);
             }
-            else if (_currentMessage.GetType() == typeof(int))
+            else if (_currentMessage.GetType() == typeof(Audio))
             {
-
+                var writer = new WavWriter();
+                await writer.SaveToFile(_currentMessage);
             }
         }
 
         private void SetEncodingChains()
         {
-            _toSendConverter = new TextToBytesConverter();
+            _toBytesConverter = new TextToBytesConverter();
             var imgToSendConverter = new ImageToBytesConverter();
             var audioToSendConverter = new AudioToBytesConverter();
-            _toSendConverter.SetNextConverter(imgToSendConverter);
+            _toBytesConverter.SetNextConverter(imgToSendConverter);
             imgToSendConverter.SetNextConverter(audioToSendConverter);
 
-            _toDisplayConverter = new TextToObjectConverter();
+            _toObjectConverter = new TextToObjectConverter();
             var imgToDisplayConverter = new ImageToObjectConverter();
             var audioToDisplayConverter = new AudioToObjectConverter();
-            _toDisplayConverter.SetNextConverter(imgToDisplayConverter);
+            _toObjectConverter.SetNextConverter(imgToDisplayConverter);
             imgToDisplayConverter.SetNextConverter(audioToDisplayConverter);
         }
     }

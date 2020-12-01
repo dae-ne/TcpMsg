@@ -6,19 +6,20 @@ namespace TcpMsg.Client.Pages
 {
     public partial class AudioPage : Page
     {
-        private readonly Media.Audio _audio;
+        private readonly Audio _audio;
         private SoundPlayer _player;
 
-        public AudioPage(Media.Audio audio)
+        public AudioPage(Audio audio)
         {
             InitializeComponent();
+            _player = new SoundPlayer();
             _audio = audio;
         }
 
         private void PlayBt_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             using var ms = _audio.GetMemoryStream();
-            _player = new SoundPlayer(ms);
+            _player.Stream = ms;
             _player.Play();
         }
 

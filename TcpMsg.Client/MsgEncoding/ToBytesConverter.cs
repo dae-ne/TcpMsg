@@ -6,7 +6,6 @@ namespace TcpMsg.Client.MsgEncoding
 {
     abstract class ToBytesConverter
     {
-        //protected Type _type;
         protected DataType _type;
         protected ToBytesConverter _nextConverter = null;
 

@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 
 namespace TcpMsg.Client.FileIO
 {
-    class TextWriter : Writer
+    class TxtWriter : Writer
     {
-        public TextWriter()
+        public TxtWriter()
             : base(typeof(string), "txt file | *.txt")
         { }
 

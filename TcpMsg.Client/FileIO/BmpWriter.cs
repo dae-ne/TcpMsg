@@ -1,21 +1,25 @@
 ﻿using Microsoft.Win32;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
-using TcpMsg.Client.Media;
+using System.Windows.Media.Imaging;
+using TcpMsg.Client.MsgEncoding;
 
 namespace TcpMsg.Client.FileIO
 {
-    class AudioWriter : Writer
+    class BmpWriter : Writer
     {
-        public AudioWriter()
-            : base(typeof(Audio), "Waveform | *.wav")
+        public BmpWriter()
+            : base(typeof(BitmapImage), "Bitmap Image | *.bmp")
         { }
 
         protected override async Task SaveData(SaveFileDialog saveFileDialog, object data)
         {
             if (saveFileDialog.ShowDialog() == true)
             {
-                var bytes = ((Audio)data).Bytes;
+                var converter = new ImageToBytesConverter();
+                var bytes = converter.Convert(data);
+                bytes = bytes.Where((_, i) => i > 3).ToArray();
                 await File.WriteAllBytesAsync(saveFileDialog.FileName, bytes);
             }
         }
