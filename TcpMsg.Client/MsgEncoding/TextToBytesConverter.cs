@@ -4,9 +4,9 @@ using System.Text;
 
 namespace TcpMsg.Client.MsgEncoding
 {
-    class TextToSendConverter : ToSendConverter
+    class TextToBytesConverter : ToBytesConverter
     {
-        public TextToSendConverter()
+        public TextToBytesConverter()
         {
             _type = DataType.Text;
         }

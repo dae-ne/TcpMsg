@@ -1,4 +1,4 @@
-﻿namespace TcpMsg.Client.MsgEncoding
+﻿namespace TcpMsg.Client
 {
     enum DataType
     {

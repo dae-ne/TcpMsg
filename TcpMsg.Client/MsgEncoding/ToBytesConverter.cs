@@ -1,25 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
-using TcpMsg.Client.Components;
 
 namespace TcpMsg.Client.MsgEncoding
 {
-    abstract class ToSendConverter
+    abstract class ToBytesConverter
     {
         //protected Type _type;
         protected DataType _type;
-        protected ToSendConverter _nextConverter = null;
+        protected ToBytesConverter _nextConverter = null;
 
         protected static readonly Dictionary<Type, int> _numbersForTypes
             = new Dictionary<Type, int>
             {
                 { typeof(string), (int)DataType.Text },
                 { typeof(BitmapImage), (int)DataType.Image },
-                { typeof(Audio), (int)DataType.Audio }
+                { typeof(Audio.Audio), (int)DataType.Audio }
             };
 
-        public void SetNextConverter(ToSendConverter nextConverter)
+        public void SetNextConverter(ToBytesConverter nextConverter)
         {
             _nextConverter = nextConverter;
         }

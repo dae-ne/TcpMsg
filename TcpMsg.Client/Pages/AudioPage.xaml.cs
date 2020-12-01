@@ -1,15 +1,15 @@
 ﻿using System.Media;
 using System.Windows.Controls;
-using TcpMsg.Client.Components;
+using TcpMsg.Client.Audio;
 
 namespace TcpMsg.Client.Pages
 {
     public partial class AudioPage : Page
     {
-        private readonly Audio _audio;
+        private readonly Audio.Audio _audio;
         private SoundPlayer _player;
 
-        public AudioPage(Audio audio)
+        public AudioPage(Audio.Audio audio)
         {
             InitializeComponent();
             _audio = audio;

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Linq;
-using TcpMsg.Client.Components;
+using TcpMsg.Client.Audio;
 
 namespace TcpMsg.Client.MsgEncoding
 {
-    class AudioToSendConverter : ToSendConverter
+    class AudioToBytesConverter : ToBytesConverter
     {
-        public AudioToSendConverter()
+        public AudioToBytesConverter()
         {
             _type = DataType.Audio;
         }
@@ -14,7 +14,7 @@ namespace TcpMsg.Client.MsgEncoding
         protected override byte[] ConvertThisType(object data)
         {
             var result = BitConverter.GetBytes((int)_type).ToList();
-            result.AddRange(((Audio)data).Bytes);
+            result.AddRange(((Audio.Audio)data).Bytes);
             return result.ToArray();
         }
     }

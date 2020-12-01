@@ -1,21 +1,21 @@
 ﻿using System;
 using System.Linq;
-using TcpMsg.Client.Components;
+using System.Text;
 
 namespace TcpMsg.Client.MsgEncoding
 {
-    class AudioToDisplayConverter : ToDisplayConverter
+    class TextToObjectConverter : ToObjectConverter
     {
-        public AudioToDisplayConverter()
+        public TextToObjectConverter()
         {
-            _type = DataType.Audio;
+            _type = DataType.Text;
         }
 
         protected override Type ConvertThisType(byte[] data, out object dataToDisplay)
         {
             var newData = data.ToList();
             newData.RemoveRange(0, 4);
-            dataToDisplay = new Audio(newData.ToArray());
+            dataToDisplay = Encoding.UTF8.GetString(newData.ToArray());
             return dataToDisplay.GetType();
         }
     }

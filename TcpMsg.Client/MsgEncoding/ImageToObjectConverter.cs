@@ -5,9 +5,9 @@ using System.Windows.Media.Imaging;
 
 namespace TcpMsg.Client.MsgEncoding
 {
-    class ImageToDisplayConverter : ToDisplayConverter
+    class ImageToObjectConverter : ToObjectConverter
     {
-        public ImageToDisplayConverter()
+        public ImageToObjectConverter()
         {
             _type = DataType.Image;
         }

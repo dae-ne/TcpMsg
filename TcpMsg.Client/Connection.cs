@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 
-namespace TcpMsg.Client.Components
+namespace TcpMsg.Client.Audio
 {
     class Connection
     {

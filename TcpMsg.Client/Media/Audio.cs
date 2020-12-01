@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 
-namespace TcpMsg.Client.Components
+namespace TcpMsg.Client.Audio
 {
     public class Audio
     {

@@ -5,9 +5,9 @@ using System;
 
 namespace TcpMsg.Client.MsgEncoding
 {
-    class ImageToSendConverter : ToSendConverter
+    class ImageToBytesConverter : ToBytesConverter
     {
-        public ImageToSendConverter()
+        public ImageToBytesConverter()
         {
             _type = DataType.Image;
         }

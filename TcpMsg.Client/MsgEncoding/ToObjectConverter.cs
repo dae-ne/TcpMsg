@@ -3,12 +3,12 @@ using System.Linq;
 
 namespace TcpMsg.Client.MsgEncoding
 {
-    abstract class ToDisplayConverter
+    abstract class ToObjectConverter
     {
         protected DataType _type;
-        protected ToDisplayConverter _nextConverter = null;
+        protected ToObjectConverter _nextConverter = null;
 
-        public void SetNextConverter(ToDisplayConverter nextConverter)
+        public void SetNextConverter(ToObjectConverter nextConverter)
         {
             _nextConverter = nextConverter;
         }

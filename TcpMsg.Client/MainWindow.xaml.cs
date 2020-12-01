@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
-using TcpMsg.Client.Components;
+using TcpMsg.Client.Audio;
 using TcpMsg.Client.MsgEncoding;
 using TcpMsg.Client.Pages;
 
@@ -16,8 +16,8 @@ namespace TcpMsg.Client
         private const string IpAddress = "127.0.0.1";
         private const int Port = 11000;
         private readonly Connection _connection;
-        private ToSendConverter _toSendConverter;
-        private ToDisplayConverter _toDisplayConverter;
+        private ToBytesConverter _toSendConverter;
+        private ToObjectConverter _toDisplayConverter;
         private bool _isSending = false;
         private object _currentMessage = null;
 
@@ -113,7 +113,7 @@ namespace TcpMsg.Client
                 }
                 else if (AudioUriTextBlock.Text != "")
                 {
-                    var audio = new Audio();
+                    var audio = new Audio.Audio();
 
                     try
                     {
@@ -161,9 +161,9 @@ namespace TcpMsg.Client
                 {
                     Main.Content = new ImagePage(receivedData as BitmapImage);
                 }
-                else if (messageType == typeof(Audio))
+                else if (messageType == typeof(Audio.Audio))
                 {
-                    Main.Content = new AudioPage(receivedData as Audio);
+                    Main.Content = new AudioPage(receivedData as Audio.Audio);
                 }
             }
         }
@@ -206,15 +206,15 @@ namespace TcpMsg.Client
 
         private void SetEncodingChains()
         {
-            _toSendConverter = new TextToSendConverter();
-            var imgToSendConverter = new ImageToSendConverter();
-            var audioToSendConverter = new AudioToSendConverter();
+            _toSendConverter = new TextToBytesConverter();
+            var imgToSendConverter = new ImageToBytesConverter();
+            var audioToSendConverter = new AudioToBytesConverter();
             _toSendConverter.SetNextConverter(imgToSendConverter);
             imgToSendConverter.SetNextConverter(audioToSendConverter);
 
-            _toDisplayConverter = new TextToDisplayConverter();
-            var imgToDisplayConverter = new ImageToDisplayConverter();
-            var audioToDisplayConverter = new AudioToDisplayConverter();
+            _toDisplayConverter = new TextToObjectConverter();
+            var imgToDisplayConverter = new ImageToObjectConverter();
+            var audioToDisplayConverter = new AudioToObjectConverter();
             _toDisplayConverter.SetNextConverter(imgToDisplayConverter);
             imgToDisplayConverter.SetNextConverter(audioToDisplayConverter);
         }
